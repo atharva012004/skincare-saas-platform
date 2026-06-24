@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              BigInt    @id @default(autoincrement())
+  uuid            String    @unique @default(uuid())
+
+  fullName        String    @map("full_name")
+  email           String    @unique
+  phoneNumber     String    @unique @map("phone_number")
+
+  passwordHash    String    @map("password_hash")
+
+  role String @default("USER")
+
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  phoneVerified   Boolean   @default(false) @map("phone_verified")
+
+  isActive        Boolean   @default(true) @map("is_active")
+
+  lastLoginAt     DateTime? @map("last_login_at")
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  emailVerificationTokens EmailVerificationToken[]
+
+  refreshTokens   RefreshToken[]
+  passwordResets  PasswordResetToken[]
+  loginHistory    LoginHistory[]
+  auditLogs       AuditLog[]
+  otpLogs         OtpLog[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          BigInt   @id @default(autoincrement())
+
+  userId      BigInt   @map("user_id")
+
+  tokenHash   String   @map("token_hash")
+
+  revoked     Boolean  @default(false)
+
+  expiresAt   DateTime @map("expires_at")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+
+  @@map("refresh_tokens")
+}
+model PasswordResetToken {
+
+id          BigInt   @id @default(autoincrement())
+
+userId      BigInt   @map("user_id")
+
+tokenHash   String   @unique @map("token_hash")
+
+expiresAt   DateTime @map("expires_at")
+
+used        Boolean  @default(false)
+
+createdAt   DateTime @default(now()) @map("created_at")
+
+user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+@@index([userId])
+
+@@map("password_reset_tokens")
+}
+
+
+model OtpLog {
+  id          BigInt   @id @default(autoincrement())
+
+  userId      BigInt   @map("user_id")
+
+  otpCode     String   @map("otp_code")
+
+  purpose     String
+
+  verified    Boolean  @default(false)
+
+  expiresAt   DateTime @map("expires_at")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([purpose])
+
+  @@map("otp_logs")
+}
+
+model LoginHistory {
+  id          BigInt   @id @default(autoincrement())
+
+  userId      BigInt   @map("user_id")
+
+  ipAddress   String?  @map("ip_address")
+
+  browser     String?
+
+  device      String?
+
+  os          String?
+
+  loginTime   DateTime @default(now()) @map("login_time")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+
+  @@map("login_history")
+}
+
+model AuditLog {
+  id          BigInt   @id @default(autoincrement())
+
+  userId      BigInt   @map("user_id")
+
+  action      String
+
+  metadata    Json?
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+
+  @@map("audit_logs")
+}
+
+model EmailVerificationToken {
+
+  id          BigInt   @id @default(autoincrement())
+
+  userId      BigInt   @map("user_id")
+
+  tokenHash   String   @unique @map("token_hash")
+
+  expiresAt   DateTime @map("expires_at")
+
+  used        Boolean  @default(false)
+
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+
+  @@index([expiresAt])
+
+  @@map("email_verification_tokens")
+}
