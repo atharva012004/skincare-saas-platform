@@ -282,7 +282,16 @@ class AuthService {
                 user.email,
 
             role:
-                user.role
+                user.role,
+
+            tenantId:
+                user.tenantId || null,
+
+            merchantId:
+                user.merchantId || null,
+
+            userType:
+                user.userType || "PLATFORM"
         };
 
         const accessToken =
@@ -408,7 +417,16 @@ class AuthService {
                 decoded.email,
 
             role:
-                decoded.role
+                decoded.role,
+
+            tenantId:
+                decoded.tenantId || null,
+
+            merchantId:
+                decoded.merchantId || null,
+
+            userType:
+                decoded.userType || "PLATFORM"
         };
 
         const newAccessToken =
