@@ -60,6 +60,18 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str
 
+    DATABASE_ECHO: bool = False
+
+    DATABASE_POOL_SIZE: int = 10
+
+    DATABASE_MAX_OVERFLOW: int = 20
+
+    DATABASE_POOL_TIMEOUT: int = 30
+
+    DATABASE_POOL_RECYCLE: int = 1800
+
+    DATABASE_POOL_PRE_PING: bool = True
+
     # ---------------------------------------------------------
     # Authentication Service
     # ---------------------------------------------------------
@@ -93,7 +105,7 @@ def get_settings() -> Settings:
     Returns cached application settings.
     """
 
-    return Settings()
+    return Settings()  # type: ignore
 
 
 settings = get_settings()

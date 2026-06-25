@@ -1,31 +1,47 @@
 """
-Application state management.
+Application state.
 
-This module defines the shared application state stored on
-the FastAPI application instance.
+This module defines the strongly typed shared state attached to the
+FastAPI application instance.
+
+Only long-lived application resources should be stored here.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import httpx
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import sessionmaker
+from structlog.typing import FilteringBoundLogger
 
-from app.core.config import Settings
+if TYPE_CHECKING:
+    from app.core.config import Settings
 
 
 @dataclass(slots=True)
 class ApplicationState:
     """
-    Shared application state.
+    Shared application resources.
 
-    Objects stored here live for the lifetime of the
-    FastAPI application.
+    This object is attached to:
+
+        app.state.platform
+
+    and remains alive for the entire application lifecycle.
     """
 
     settings: Settings
 
-    logger: Any
+    logger: FilteringBoundLogger
 
-    http_client: httpx.AsyncClient
+    db_engine: Engine | None = None
+
+    session_factory: sessionmaker | None = None
+
+    http_client: httpx.AsyncClient | None = None
+
+    started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
