@@ -1,13 +1,22 @@
+"""
+Skincare SaaS Platform.
+
+Application entry point.
+"""
+
 from fastapi import FastAPI
 
-from app.api.v1 import api_router
+from app.api.router import api_router
 from app.core.config import settings
-from app.core.startup import lifespan
+from app.core.lifespan import lifespan
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Enterprise Multi Tenant SaaS Platform",
+    description="Enterprise Multi-Tenant SaaS Platform",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     lifespan=lifespan,
 )
 
@@ -17,9 +26,17 @@ app.include_router(
 )
 
 
-@app.get("/")
+@app.get(
+    "/",
+    tags=["Root"],
+)
 async def root():
+    """
+    Root endpoint.
+    """
+
     return {
-        "message": settings.APP_NAME,
+        "application": settings.APP_NAME,
         "version": settings.APP_VERSION,
+        "environment": settings.ENVIRONMENT,
     }
