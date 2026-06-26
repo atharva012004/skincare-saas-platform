@@ -11,7 +11,6 @@ from fastapi import FastAPI
 
 from app.core.logging import get_logger
 from app.core.startup import startup
-from app.db.engine import engine
 
 logger = get_logger(__name__)
 
@@ -31,6 +30,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if app.state.platform.http_client:
         await app.state.platform.http_client.aclose()
 
-    engine.dispose()
+    await app.state.platform.db_engine.dispose()
 
     logger.info("Application shutdown completed.")

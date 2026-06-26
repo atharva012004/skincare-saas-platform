@@ -14,8 +14,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import httpx
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from structlog.typing import FilteringBoundLogger
 
 if TYPE_CHECKING:
@@ -38,9 +37,9 @@ class ApplicationState:
 
     logger: FilteringBoundLogger
 
-    db_engine: Engine | None = None
+    db_engine: AsyncEngine | None = None
 
-    session_factory: sessionmaker | None = None
+    session_factory: async_sessionmaker[AsyncSession] | None = None
 
     http_client: httpx.AsyncClient | None = None
 

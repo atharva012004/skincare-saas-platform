@@ -32,7 +32,7 @@ async def startup(app: FastAPI) -> None:
         settings.ENVIRONMENT,
     )
 
-    check_database_connection()
+    await check_database_connection()
 
     http_client = httpx.AsyncClient(
         timeout=httpx.Timeout(30.0),

@@ -1,34 +1,32 @@
 """
 Database session management.
 
-Provides the SQLAlchemy Session factory and the FastAPI dependency.
+Provides the SQLAlchemy AsyncSession factory and FastAPI dependency.
 """
 
 from __future__ import annotations
 
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.engine import engine
 
-SessionLocal = sessionmaker(
+SessionLocal = async_sessionmaker(
     bind=engine,
-    autoflush=False,
-    autocommit=False,
+    class_=AsyncSession,
     expire_on_commit=False,
+    autoflush=False,
 )
 
 
-def get_db() -> Generator[Session, None, None]:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
-    FastAPI dependency that provides a database session.
+    FastAPI dependency that provides an asynchronous database session.
     """
 
-    db = SessionLocal()
-
-    try:
-        yield db
-
-    finally:
-        db.close()
+    async with SessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
