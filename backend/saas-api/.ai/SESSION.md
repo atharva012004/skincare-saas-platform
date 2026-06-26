@@ -30,7 +30,10 @@ Merchant REST API
 
 # Current Objective
 
-Implement ONLY Milestone 3 — Merchant Service.
+Implement ONLY Milestone 4 — Merchant REST API.
+
+
+
 
 
 
@@ -158,29 +161,45 @@ Milestone 2 — Merchant Repository.
 
 ---
 
-# Next Immediate Task
+# Completed Tasks
 
-Milestone 3 — Merchant Service/HTTP endpoints (PR-006 remaining work).
+* PR-006 — Milestone 4: Merchant REST API (HTTP endpoints)
 
 ---
+
+# Files Modified
+
+- app/api/v1/merchants.py
+
+---
+
+# Quality Gate Results
+
+- black: PASS
+- ruff: PASS
+- mypy: PASS
+- compileall: PASS
+- pytest: PASS
+
+---
+
+# Next Immediate Task
+
+Milestone 5
+
+---
+
 
 
 # Resume Instructions
 
 If development resumes
-
 Read AGENTS.md
-
 Read every .ai document
-
 Run git status
-
 Run git log
-
 Compare repository with SESSION.md
-
 Continue ONLY from Next Immediate Task.
-
 Never restart completed work.
 
 ---
@@ -188,7 +207,6 @@ Never restart completed work.
 # AI Update Rules
 
 Update this file
-
 After every significant implementation step
-
 Not only after roadmap completion.
+
