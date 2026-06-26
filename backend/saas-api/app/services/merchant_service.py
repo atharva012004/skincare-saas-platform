@@ -12,15 +12,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.merchant import Merchant
 from app.repositories.merchant_repository import MerchantRepository
-from app.schemas.merchant.request import MerchantCreateRequest
+from app.schemas.merchant.request import MerchantCreateRequest, MerchantUpdateRequest
 from app.services.validators.merchant_validator import MerchantValidator
-from app.shared.exceptions import ConflictException
+from app.shared.exceptions import (
+    ConflictException,
+    NotFoundException,
+)
 
 
 class MerchantService:
-    """
-    Service for managing merchants.
-    """
+    """Service for managing merchants."""
 
     def __init__(
         self,
@@ -148,3 +149,81 @@ class MerchantService:
         )
 
         return merchant
+
+    async def get_merchant(
+        self,
+        merchant_id: UUID,
+    ) -> Merchant:
+        """Get a merchant by id or raise if missing."""
+
+        merchant = await self.repository.get_by_id(merchant_id)
+        if merchant is None:
+            raise NotFoundException("Merchant not found.")
+        return merchant
+
+    async def update_merchant(
+        self,
+        merchant_id: UUID,
+        request: MerchantUpdateRequest,
+    ) -> Merchant:
+        """Update an existing merchant (soft-immutable: only fields update)."""
+
+        try:
+            merchant = await self.repository.get_by_id(merchant_id)
+            if merchant is None:
+                raise NotFoundException("Merchant not found.")
+
+            # Reuse existing validator for create-style conflicts only when unique fields are changed.
+            # Do not duplicate validator logic.
+            # Validate unique fields when they change.
+            if request.email is not None and request.email != merchant.email:
+                if await self.repository.exists_by_email(request.email):
+                    raise ConflictException(
+                        "Merchant with this email already exists.",
+                    )
+
+            # Apply partial updates.
+            update_data = request.model_dump(exclude_unset=True, exclude_none=True)
+            for field_name, value in update_data.items():
+                if hasattr(merchant, field_name):
+                    setattr(merchant, field_name, value)
+
+            merchant = await self.repository.add_merchant(merchant)  # type: ignore[arg-type]
+            await self.session.commit()
+            await self.repository.refresh_merchant(merchant)
+            return merchant
+        except NotFoundException:
+            await self.session.rollback()
+            raise
+        except ConflictException:
+            await self.session.rollback()
+            raise
+
+    async def list_merchants(
+        self,
+        *,
+        offset: int = 0,
+        limit: int = 100,
+    ) -> list[Merchant]:
+        """List active merchants."""
+
+        return await self.repository.list_merchants(offset=offset, limit=limit)
+
+    async def soft_delete_merchant(
+        self,
+        merchant_id: UUID,
+    ) -> Merchant:
+        """Soft delete a merchant."""
+
+        try:
+            merchant = await self.repository.get_by_id(merchant_id)
+            if merchant is None:
+                raise NotFoundException("Merchant not found.")
+
+            await self.repository.soft_delete(merchant)
+            await self.session.commit()
+            await self.repository.refresh_merchant(merchant)
+            return merchant
+        except NotFoundException:
+            await self.session.rollback()
+            raise

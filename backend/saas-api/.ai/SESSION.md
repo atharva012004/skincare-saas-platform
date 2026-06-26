@@ -30,13 +30,16 @@ Merchant REST API
 
 # Current Objective
 
-Implement enterprise Merchant REST API.
+Implement ONLY Milestone 3 — Merchant Service.
+
+
 
 ---
 
 # Current Feature
 
-Merchant CRUD
+Merchant Repository (Milestone 2)
+
 
 ---
 
@@ -120,17 +123,47 @@ pytest
 
 # Last Completed Task
 
-Update after every completed task.
+Milestone 2 — Merchant Repository.
+
+---
+
+# Files Modified
+
+- app/services/merchant_service.py
+- app/tests/test_merchant_repository.py
+
+
+
+---
+
+# Quality Gate Results
+
+- black: PASS
+- ruff: PASS
+- mypy: PASS
+- compileall: PASS
+- pytest: PASS
+
+---
+
+# Repository Changes
+
+- MerchantRepository already provided persistence-only CRUD + soft-delete exclusion via query filters.
+
+---
+
+# Database Query Changes
+
+- Added repository test validating soft-delete exclusion and basic list pagination behavior.
 
 ---
 
 # Next Immediate Task
 
-Update after every completed task.
-
-Only ONE next task should exist.
+Milestone 3 — Merchant Service/HTTP endpoints (PR-006 remaining work).
 
 ---
+
 
 # Resume Instructions
 

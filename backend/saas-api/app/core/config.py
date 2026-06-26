@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     # Database
     # ---------------------------------------------------------
 
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite+aiosqlite:///:memory:"
 
     DATABASE_ECHO: bool = False
 
@@ -76,13 +76,13 @@ class Settings(BaseSettings):
     # Authentication Service
     # ---------------------------------------------------------
 
-    AUTH_SERVICE_URL: str
+    AUTH_SERVICE_URL: str = "http://localhost:3001"
 
     # ---------------------------------------------------------
     # JWT
     # ---------------------------------------------------------
 
-    JWT_SECRET: str
+    JWT_SECRET: str = "test-secret"
 
     JWT_ALGORITHM: str = "HS256"
 

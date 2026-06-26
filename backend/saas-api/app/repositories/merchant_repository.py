@@ -17,9 +17,7 @@ from app.repositories.base import BaseRepository
 
 
 class MerchantRepository(BaseRepository[Merchant]):
-    """
-    Repository for Merchant entities.
-    """
+    """Merchant persistence repository."""
 
     def __init__(
         self,
@@ -196,17 +194,3 @@ class MerchantRepository(BaseRepository[Merchant]):
 
         merchant.is_deleted = True
         merchant.deleted_at = datetime.now(UTC)
-
-    async def commit(self) -> None:
-        """
-        Commit the current transaction.
-        """
-
-        await super().commit()
-
-    async def rollback(self) -> None:
-        """
-        Roll back the current transaction.
-        """
-
-        await super().rollback()
