@@ -19,6 +19,10 @@ class MerchantCreateRequest(MerchantBase):
         from_attributes=True,
     )
 
+    merchant_code: str
+
+    slug: str
+
 
 class MerchantUpdateRequest(BaseModel):
     """

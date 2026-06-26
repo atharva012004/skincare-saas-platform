@@ -13,6 +13,17 @@ from app.middleware.exception_handler import register_exception_handlers
 from app.shared.response_factory import ResponseFactory
 from app.shared.responses import ApiResponse
 
+OPENAPI_TAGS = [
+    {
+        "name": "Root",
+        "description": "Application metadata endpoints.",
+    },
+    {
+        "name": "Health",
+        "description": "Platform health and dependency readiness endpoints.",
+    },
+]
+
 
 def create_app() -> FastAPI:
     """
@@ -27,6 +38,13 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        openapi_tags=OPENAPI_TAGS,
+        contact={
+            "name": "Skincare SaaS Platform Engineering",
+        },
+        license_info={
+            "name": "MIT",
+        },
     )
 
     register_exception_handlers(app)
