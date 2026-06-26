@@ -7,6 +7,7 @@ from __future__ import annotations
 from http import HTTPStatus
 
 from app.shared.constants import ErrorCodes
+from app.shared.responses import ErrorDetail
 
 
 class BaseAPIException(Exception):
@@ -18,8 +19,11 @@ class BaseAPIException(Exception):
     def __init__(
         self,
         message: str,
+        *,
+        details: list[ErrorDetail] | None = None,
     ) -> None:
         self.message = message
+        self.details = details or []
         super().__init__(message)
 
 

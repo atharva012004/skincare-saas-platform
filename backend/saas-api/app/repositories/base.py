@@ -1,28 +1,25 @@
 """
 Generic SQLAlchemy repository.
 
-Provides reusable asynchronous CRUD operations for all domain repositories.
+Provides the base infrastructure for all repositories.
 """
 
 from __future__ import annotations
 
-import uuid
-from typing import Generic, TypeVar, cast
+from typing import Generic, TypeVar
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, select
+from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.protocols import EntityProtocol
+from app.models.base import Base
 
-ModelType = TypeVar(
-    "ModelType",
-    bound=EntityProtocol,
-)
+ModelType = TypeVar("ModelType", bound=Base)
 
 
 class BaseRepository(Generic[ModelType]):
     """
-    Generic repository for SQLAlchemy models.
+    Base repository providing common SQLAlchemy functionality.
     """
 
     def __init__(
@@ -30,80 +27,92 @@ class BaseRepository(Generic[ModelType]):
         session: AsyncSession,
         model: type[ModelType],
     ) -> None:
-        self.session = session
-        self.model = model
+        self._session = session
+        self._model = model
+
+    @property
+    def session(self) -> AsyncSession:
+        """
+        Return the active database session.
+        """
+
+        return self._session
+
+    @property
+    def model(self) -> type[ModelType]:
+        """
+        Return the SQLAlchemy model handled by this repository.
+        """
+
+        return self._model
 
     @property
     def query(self) -> Select[tuple[ModelType]]:
         """
-        Base SELECT query.
+        Return the base SELECT query for the repository model.
         """
 
         return select(self.model)
 
-    async def get_by_id(
+    async def _execute(
         self,
-        entity_id: uuid.UUID,
-        *,
-        include_deleted: bool = False,
-    ) -> ModelType | None:
+        statement: Select,
+    ) -> Result:
         """
-        Retrieve an entity by its primary key.
+        Execute a SQLAlchemy SELECT statement.
         """
 
-        statement = self.query.where(self.model.id == entity_id)
+        return await self.session.execute(statement)
 
-        if hasattr(self.model, "is_deleted") and not include_deleted:
-            statement = statement.where(self.model.is_deleted.is_(False))
-
-        result = await self.session.execute(statement)
-
-        return cast(ModelType | None, result.scalar_one_or_none())
-
-    async def get_all(
+    async def add(
         self,
-        *,
-        offset: int = 0,
-        limit: int = 100,
-        include_deleted: bool = False,
-    ) -> list[ModelType]:
+        entity: ModelType,
+    ) -> ModelType:
         """
-        Return a paginated list of entities.
+        Add an entity to the current session.
+
+        The entity is flushed so database-generated values become available.
+        Transaction commit is managed by the service layer.
         """
 
-        statement = self.query.offset(offset).limit(limit)
+        self.session.add(entity)
+        await self.session.flush()
 
-        if hasattr(self.model, "is_deleted") and not include_deleted:
-            statement = statement.where(self.model.is_deleted.is_(False))
+        return entity
 
-        result = await self.session.execute(statement)
-
-        return cast(list[ModelType], result.scalars().all())
-
-    async def count(
+    async def refresh(
         self,
-        *,
-        include_deleted: bool = False,
-    ) -> int:
+        entity: ModelType,
+    ) -> None:
         """
-        Count repository entities.
+        Refresh an entity from the database.
         """
 
-        statement = select(func.count()).select_from(self.model)
+        await self.session.refresh(entity)
 
-        if hasattr(self.model, "is_deleted") and not include_deleted:
-            statement = statement.where(self.model.is_deleted.is_(False))
-
-        result = await self.session.execute(statement)
-
-        return int(result.scalar_one())
-
-    async def exists(
+    async def delete(
         self,
-        entity_id: uuid.UUID,
-    ) -> bool:
+        entity: ModelType,
+    ) -> None:
         """
-        Check whether an entity exists.
+        Delete an entity from the current session.
+
+        Transaction commit is managed by the service layer.
         """
 
-        return await self.get_by_id(entity_id) is not None
+        await self.session.delete(entity)
+        await self.session.flush()
+
+    async def commit(self) -> None:
+        """
+        Commit the active transaction.
+        """
+
+        await self.session.commit()
+
+    async def rollback(self) -> None:
+        """
+        Roll back the active transaction.
+        """
+
+        await self.session.rollback()
